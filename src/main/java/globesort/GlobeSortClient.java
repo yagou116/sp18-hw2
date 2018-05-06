@@ -40,13 +40,28 @@ public class GlobeSortClient {
 
     public void run(Integer[] values) throws Exception {
         System.out.println("Pinging " + serverStr + "...");
+        long tp0 = System.nanoTime();
         serverStub.ping(Empty.newBuilder().build());
+        long tp1 = System.nanoTime();
         System.out.println("Ping successful.");
+        System.out.println("Ping Latency: " + Long.toString(tp1 - tp0));
 
         System.out.println("Requesting server to sort array");
         IntArray request = IntArray.newBuilder().addAllValues(Arrays.asList(values)).build();
-        IntArray response = serverStub.sortIntegers(request);
-        System.out.println("Sorted array");
+        int cnt = request.getValuesCount();
+        long t1 = System.nanoTime();
+        // IntArray response = serverStub.sortIntegers(request);
+        ArrayTimeResp response = serverStub.sortIntegers(request);
+        long t4 = System.nanoTime();
+        long t2 = response.getTimes();
+        long t3 = response.getTimee();
+        double tput = (double) cnt*1000000000/(t4-t1);
+        double bwidth = (double) cnt*2*1000000000/(t2+t4-t1-t3);
+        System.out.println("Sorting completed.");
+        System.out.println("Sorting latency: " + Long.toString(t4 - t1));
+        System.out.println("Server Processing time: " + Long.toString(t3 - t2));
+        System.out.println("Application Throughput: " + Double.toString(tput));
+        System.out.println("One-way Network Throughput: " + Double.toString(bwidth));      
     }
 
     public void shutdown() throws InterruptedException {
